@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
@@ -26,13 +27,13 @@ public class Creator {
 	private final static String alphabet = "abcde";
 	private final static int numAlphabetItems = alphabet.length();
 	private ClassLoader classLoader = getClass().getClassLoader();
-	private String packageName = "test";
-	private String className = "Test";
+	private static final String CLASS_NAME = "Test";
+	private static final String PACKAGE_NAME = "test";
 	private JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 	private List<ClassBody> compiledList = new ArrayList<ClassBody>();
 	private ClassBody classBody;
-	private int longestSourceCode = 0;
-	private FileObject fileToCompile = new FileObject("test", "");
+	private int longestSourceCode = 0;	
+	private FileObject fileToCompile = new FileObject(CLASS_NAME + Kind.SOURCE, "");
 	private StringBuilder sb = new StringBuilder();
 
 	{
@@ -133,9 +134,9 @@ public class Creator {
 
 		sb.setLength(0);
 		sb.append("package ");
-		sb.append(packageName);
+		sb.append(PACKAGE_NAME);
 		sb.append("; public class ");
-		sb.append(className);
+		sb.append(CLASS_NAME);
 		sb.append(" { ");
 		sb.append(classBody.toString());
 		sb.append(" }");
