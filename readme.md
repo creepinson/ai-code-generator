@@ -1,12 +1,7 @@
-This program continuously writes suedo-random classes. 
-It compiles the classes when they are created.
-If they did not compile, they are discarded.
-If they did compile, they are added to a compiled pool.
-Then the program starts over in the loop.
-If there is atleast 1 item in the compiled loop, 
-then there is a 50 percent chance that an existing "known-to-compile"
-string is used, and random mutations are applied to it. The other 50
-percent chance is that a completely new random class is attempted.
-The result is compiled, and the loop continues.
-Successful compilations are output to the out.txt file, only if they are the new
-longest successful "known-to-compile" string.
+This program continuously writes random java classes using dictionaries of java keywords, operators, symbols, random strings, random numbers. The application needs direction.
+Its current objective is just to create code which compiles and is long.
+
+Its rules being followed are:
+  - Cannot place variable name next to another variable name.
+
+The next step in the program will be to define some sort of problem for it to solve, and a way to test source code to see if it is getting closer to solving the problem.
