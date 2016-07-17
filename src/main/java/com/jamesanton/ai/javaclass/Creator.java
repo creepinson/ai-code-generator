@@ -2,13 +2,14 @@ package com.jamesanton.ai.javaclass;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import javax.tools.JavaCompiler;
+import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.io.FileUtils;
@@ -25,21 +26,20 @@ public class Creator {
 	private final static String alphabet = "abcde";
 	private final static int numAlphabetItems = alphabet.length();
 	private ClassLoader classLoader = getClass().getClassLoader();
-	private String rootPath = "/java/randomtest";
 	private String packageName = "test";
 	private String className = "Test";
-	private File root = new File(rootPath);
-	private File sourceFile;
 	private JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 	private List<ClassBody> compiledList = new ArrayList<ClassBody>();
 	private ClassBody classBody;
 	private int longestSourceCode = 0;
+	private FileObject fileToCompile = new FileObject("test", "");
+	private StringBuilder sb = new StringBuilder();
 
 	{
 		File keywordsFile = new File(classLoader.getResource("java-keywords.txt").getFile());
 		File operatorsFile = new File(classLoader.getResource("java-operators.txt").getFile());
 		File symbolsFile = new File(classLoader.getResource("java-symbols.txt").getFile());
-		
+
 		try {
 			keywords = FileUtils.readLines(keywordsFile);
 			operators = FileUtils.readLines(operatorsFile);
@@ -49,27 +49,28 @@ public class Creator {
 		}
 
 	}
-		
+
 	public static void main(String[] args) {
 		Creator c = new Creator();
 		c.create();
 	}
-	
+
 	private void create() {
 		while (true) {
 			try {
 				// Generate and check if it compiles
-				if (generate() == 0) {
+				if (generate()) {
 					if (!compiledList.contains(classBody)) {
 						String trimmedClassBody = classBody.toString().replace("  ", " ");
 						int trimmedClassBodyLength = trimmedClassBody.length();
 
-						
 						if (trimmedClassBodyLength > longestSourceCode) {
 							longestSourceCode = trimmedClassBodyLength;
 							appendToFile(classBody);
-							// Add the item once to the list for each of its length
-							// (to increase the probability of it being picked for
+							// Add the item once to the list for each of its
+							// length
+							// (to increase the probability of it being picked
+							// for
 							// mutation)
 							for (int i = 0; i < trimmedClassBodyLength; i++) {
 								compiledList.add(classBody);
@@ -91,26 +92,58 @@ public class Creator {
 		try {
 			FileUtils.writeStringToFile(new File(fPath), classBody2.toString() + "\n", true);
 		} catch (IOException e) {
-			
+
 		}
 	}
 
-	
+	public class FileObject extends SimpleJavaFileObject {
+		private String code;
 
-	private int generate() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+		public FileObject(String name, String code) {
+			super(URI.create(name), Kind.SOURCE);
+			this.code = code;
+		}
+
+		public void setCode(String code) {
+			this.code = code;
+		}
+
+		@Override
+		public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+			return code;
+		}
+	}
+
+	/**
+	 * Generates a class, attempts to compile it, and returns true if it
+	 * compiles and false if it doesn't compile
+	 * 
+	 * @return
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
+	private boolean generate() throws IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
 		count++;
 		System.out.println(count);
-		FileUtil.removeFilesAndFolder(rootPath);
 
 		classBody = getAClassBody();
-		String activeString = "package " + packageName + "; public class " + className + " { " + classBody.toString()
-				+ " }";
 
-		root = new File(rootPath);
-		sourceFile = new File(root, "test/Test.java");
-		sourceFile.getParentFile().mkdirs();
-		Files.write(sourceFile.toPath(), activeString.getBytes(StandardCharsets.UTF_8));
-		return compiler.run(null, null, null, sourceFile.getPath());
+		sb.setLength(0);
+		sb.append("package ");
+		sb.append(packageName);
+		sb.append("; public class ");
+		sb.append(className);
+		sb.append(" { ");
+		sb.append(classBody.toString());
+		sb.append(" }");
+		fileToCompile.setCode(sb.toString());
+
+		JavaCompiler.CompilationTask task = compiler.getTask(null, null, null, null, null,
+				Arrays.asList(fileToCompile));
+		return task.call();
 	}
 
 	private ClassBody getAClassBody() {
@@ -132,7 +165,8 @@ public class Creator {
 	}
 
 	/**
-	 * Adds up to 4 random items into random indexes of the classbody 
+	 * Adds up to 4 random items into random indexes of the classbody
+	 * 
 	 * @param newBody
 	 * @return
 	 */
@@ -169,8 +203,6 @@ public class Creator {
 		return cb;
 	}
 
-	
-
 	private String getRandom() {
 		int typesOfRandom = 5;
 		int randomTypeIndex = RandomUtil.getRandomNumberStartingFromZero(typesOfRandom);
@@ -189,7 +221,7 @@ public class Creator {
 		return null;
 	}
 
-	private String getRandomVariableName() {		
+	private String getRandomVariableName() {
 		return "VAR" + getRandomLetter() + getRandomLetter();
 	}
 
