@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
@@ -33,7 +32,7 @@ public class Creator {
 	private List<ClassBody> compiledList = new ArrayList<ClassBody>();
 	private ClassBody classBody;
 	private int longestSourceCode = 0;	
-	private FileObject fileToCompile = new FileObject(CLASS_NAME + Kind.SOURCE, "");
+	private FileObject fileToCompile = new FileObject(CLASS_NAME + ".java", "");
 	private StringBuilder sb = new StringBuilder();
 
 	{
